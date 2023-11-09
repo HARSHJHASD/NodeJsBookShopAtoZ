@@ -25,8 +25,8 @@
                 <textarea name="description" id="description" rows="5"><% if (editing) { %><%= product.description %><% } %></textarea>
             </div>
             <div class="form-controlHide">
-                <label for="productId">ProductID</label>
-                <textarea name="productId" id="productId" rows="5"><% if (editing) { %><%= product.productId %><% } %></textarea>
+                <label for="id">id</label>
+                <textarea name="id" id="id" rows="5"><% if (editing) { %><%= product.id %><% } %></textarea>
             </div>
 
             <button class="btn" type="submit"><% if (editing) { %>Update Product<% } else { %>Add Product<% } %></button>

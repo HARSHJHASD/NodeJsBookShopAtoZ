@@ -10,7 +10,7 @@
                         <li>
                             <p><%= p.productData.title %> (<%= p.qty %>)</p>
                             <form action="/cart-delete-item" method="POST">
-                                <input type="hidden" value="<%= p.productData.id %>" name="productId">
+                                <input type="hidden" value="<%= p.productData.id %>" name="id">
                                 <a href="admin/delete-product/<%= p.productData.title %>" class="btn">Delete</a>
                             </form>
                         </li>
