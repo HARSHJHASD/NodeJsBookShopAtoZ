@@ -13,15 +13,14 @@ exports.postAddProduct = async (req, res, next) => {
   const imageUrl = "https://picsum.photos/200/300";
   const price = req.body.price;
   const description = req.body.description;
-  const id = (Math.random() * 10).toString();
-  const payload = {
-    title: title,
-    imageUrl: imageUrl,
-    price: price,
-    description: description,
-  };
-  console.log("Product to add : ", payload);
-  Product.create(payload)
+  // const id = (Math.random() * 10).toString();
+  req.user
+    .createProduct({
+      title: title,
+      imageUrl: imageUrl,
+      price: price,
+      description: description,
+    })
     .then((response) => {
       console.log("Product Added.", response);
     })
@@ -35,12 +34,16 @@ exports.postEditProduct = async (req, res, next) => {
   const Updatedproduct = req.body;
   Product.findByPk(Updatedproduct?.id)
     .then((product) => {
-      // Update the existing product with the new data
-      product.title = Updatedproduct.title;
-      product.imageUrl = Updatedproduct.imageUrl;
-      product.price = Updatedproduct.price;
-      product.description = Updatedproduct.description;
-      return product.save();
+      if (product.userId === req.user.id) {
+        // Update the existing product with the new data
+        product.title = Updatedproduct.title;
+        product.imageUrl = Updatedproduct.imageUrl;
+        product.price = Updatedproduct.price;
+        product.description = Updatedproduct.description;
+        return product.save();
+      } else {
+        res.status(400).send("You are not allowed to edit this");
+      }
     })
     .then(() => {
       console.log("Updated Product !");
@@ -69,26 +72,46 @@ exports.getEditProduct = async (req, res, next) => {
     "individual product is 000000000000000000000000000000000000000000000000000000000000000000: ",
     product
   );
-  res.render("admin/edit-product", {
-    pageTitle: "Edit Product",
-    path: "/admin/edit-product",
-    editing: editMode,
-    product: product,
-  });
+
+  if (req.user.id !== product?.userId) {
+    return res.status(403).render("error", {
+      pageTitle: "Unauthorized",
+      path: "/error",
+      errorMessage: "You are not authorized to edit this product.",
+    });
+  }
+  if (req.user.id === product?.userId) {
+    res.render("admin/edit-product", {
+      pageTitle: "Edit Product",
+      path: "/admin/edit-product",
+      editing: editMode,
+      product: product,
+    });
+  }
 };
 
-exports.getProducts = (req, res, next) => {
-  Product.findAll()
-    .then(([rows, fieldData]) => {
-      res.render("admin/products", {
-        prods: rows,
-        pageTitle: "Admin Products",
-        path: "/admin/products",
-      });
-    })
-    .catch((error) => {
-      console.log("error in getProducts ..", error);
+exports.getProducts = async (req, res, next) => {
+  try {
+    // Assuming you have the user available in req.user
+    const user = req.user;
+    if (!user) {
+      return res.redirect("/");
+    }
+    // Use the association method to get the products associated with the user
+    const products = await user.getProducts();
+    res.render("admin/products", {
+      prods: products,
+      pageTitle: "Admin Products",
+      path: "/admin/products",
     });
+  } catch (error) {
+    console.log("Error in getProducts:", error);
+    res.status(500).render("error", {
+      pageTitle: "Internal Server Error",
+      path: "/error",
+      errorMessage: "An error occurred while fetching products.",
+    });
+  }
 };
 
 exports.deleteEditProduct = async (req, res, next) => {
