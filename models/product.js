@@ -55,7 +55,7 @@
 // async function fetchAll() {
 //   const products = await db.execute("SELECT * from products");
 //   console.log("products in fetch all from database:", products);
-//   // console.log("products in fetchAll: ", products[0]);
+//   // console.log("products in fetchAll: ", products);
 //   return products;
 // }
 
@@ -67,7 +67,7 @@
 //   const products = await fetchAll();
 //   // Find the index of the product with the same ID as the received product
 //   const index = products.findIndex(
-//     (existingProduct) => existingProduct && existingProduct.id === product.id
+//     (existingProduct) => existingProduct && existingProduct.id === product?.id
 //   );
 //   console.log("index found : ", index);
 //   // If the product with the same ID is found, replace it with the new product data
@@ -120,7 +120,7 @@
 //   //   price: '462',
 //   //   id: 9.24274497854152
 //   // }
-//   // return foundElement.slice(0, 1)?.[0];
+//   // return foundElement.slice(0, 1)?.;
 // }
 
 // //delete product by id...
@@ -180,9 +180,8 @@ const Product = sequelize.define("product", {
   id: {
     type: Sequelize.INTEGER,
     autoIncrement: true,
-    primaryKey: true,
     allowNull: false,
-    unique: true,
+    primaryKey: true,
   },
   price: {
     type: Sequelize.DOUBLE,

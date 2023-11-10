@@ -26,40 +26,55 @@ exports.postAddProduct = async (req, res, next) => {
       console.log("Product Added.", response);
     })
     .catch((error) => {
-      console.log("Error is : ", error);
+      console.log("Error is : ", error, payload);
     });
   res.redirect("/");
 };
 
 exports.postEditProduct = async (req, res, next) => {
-  const product = req.body;
-  const response = await Product.editProduct({ product: product });
-  if (response) {
-    res.redirect("/products");
-  } else {
-    res.status(400).send(product);
-  }
+  const Updatedproduct = req.body;
+  Product.findByPk(Updatedproduct?.id)
+    .then((product) => {
+      // Update the existing product with the new data
+      product.title = Updatedproduct.title;
+      product.imageUrl = Updatedproduct.imageUrl;
+      product.price = Updatedproduct.price;
+      product.description = Updatedproduct.description;
+      return product.save();
+    })
+    .then(() => {
+      console.log("Updated Product !");
+      res.redirect("/admin/products");
+    })
+    .catch((error) => {
+      console.log("Error editing we have : ", error);
+    });
+
+  // const response = await Product.editProduct({ product: product });
+  // if (response) {
+  //   res.redirect("/products");
+  // } else {
+  //   res.status(400).send(product);
+  // }
 };
 
 exports.getEditProduct = async (req, res, next) => {
-  // console.log("individual product is 0000000000000000000000: ");
-  // res.send("hellooooo");
   const editMode = req.query.edit;
   if (!editMode) {
     return res.redirect("/");
   }
   const prodId = req.params.id;
-  const product = await Product.findById(prodId);
+  const product = await Product.findByPk(prodId);
   console.log(
     "individual product is 000000000000000000000000000000000000000000000000000000000000000000: ",
     product
   );
-  // res.render("admin/edit-product", {
-  //   pageTitle: "Edit Product",
-  //   path: "/admin/edit-product",
-  //   editing: editMode,
-  //   product: product,
-  // });
+  res.render("admin/edit-product", {
+    pageTitle: "Edit Product",
+    path: "/admin/edit-product",
+    editing: editMode,
+    product: product,
+  });
 };
 
 exports.getProducts = (req, res, next) => {
@@ -79,13 +94,18 @@ exports.getProducts = (req, res, next) => {
 exports.deleteEditProduct = async (req, res, next) => {
   // res.status(200).send("Product Deleted with id : ",req.params);
   const id = req.params.id;
-  const response = await Product.deleteById(id);
-  if (response) {
-    // res.status(200).send("Successfully deleted");
-    res.redirect("/products");
-  } else {
-    // res.status(400).send("Can not delete this product...");
-    res.redirect("/products");
+  try {
+    const product = await Product.findByPk(id);
+    if (!product) {
+      // res.status(200).send("Successfully deleted");
+      res.status(400).json({ error: "Product Not Found" });
+    } else {
+      // res.status(400).send("Can not delete this product...");
+      await product.destroy();
+      res.redirect("/products");
+    }
+  } catch (error) {
+    res.status(500).json({ error: "Internal Server Error" });
   }
 };
 

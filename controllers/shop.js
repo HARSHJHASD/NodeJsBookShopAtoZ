@@ -19,21 +19,21 @@ exports.getProducts = async (req, res, next) => {
 exports.postCartDeleteProduct = async (req, res, next) => {
   const prodId = req.body.id;
   res.status(200).send("To be deleted : ", prodId);
-  const product = await Product.findById(prodId);
+  const product = await Product.findByPk(prodId);
   console.log("for deleting product cart items : ", product, prodId);
 
   // product => {
-  //   Cart.deleteProduct(prodId, product.price);
+  //   Cart.deleteProduct(prodId, product?.price);
   //   res.redirect('/cart');
   // };
 };
 
 exports.getProduct = async (req, res, next) => {
   const prodId = req.params.id;
-  const [rows, fieldData] = await Product.findById(prodId);
-  console.log("PRODUCT PRODUCT :", rows[0]);
+  const rows = await Product.findByPk(prodId);
+  console.log("PRODUCT PRODUCT :", rows);
   res.render("shop/product-detail", {
-    product: rows[0],
+    product: rows,
     pageTitle: rows?.title,
     path: "/products",
   });
@@ -91,7 +91,7 @@ exports.getCart = async (req, res, next) => {
 exports.postCart = async (req, res, next) => {
   const prodId = req.body.id;
   // console.log("to add to cartt:", req.body);
-  const product = await Product.findById(prodId);
+  const product = await Product.findByPk(prodId);
   console.log("fetched product for cart :", product);
   if (product) {
     Cart.addProduct({ id: prodId, price: product?.price });
